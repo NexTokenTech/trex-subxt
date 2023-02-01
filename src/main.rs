@@ -27,8 +27,6 @@ use crate::trex_node::runtime_types::trex_primitives::KeyPiece;
 struct Args {
 	#[clap(short = 'n', long, default_value_t = String::from("ws://127.0.0.1:9944"))]
 	node_host: String,
-	#[clap(short = 't', long, default_value_t = String::from("tee_account_id.txt"))]
-	tee_account_file: String,
 	#[clap(short = 's', long, default_value_t = String::from("seed.yml"))]
 	seed: String,
 }
