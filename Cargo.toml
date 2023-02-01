@@ -1,0 +1,17 @@
+[package]
+name = "trex-account-funds"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+subxt = "0.23.0"
+tracing-subscriber = "0.3.11"
+sp-keyring = "6.0.0"
+futures = "0.3.13"
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive", "full", "bit-vec"] }
+tokio = { version = "1.8", features = ["rt-multi-thread", "macros", "time"] }
+
+log = '0.4.8'
+clap = {version = "4.0.0", features = ["derive"]}
