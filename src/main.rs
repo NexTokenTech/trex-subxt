@@ -7,8 +7,14 @@ use aes_gcm::{
 use clap::Parser;
 use codec::Encode;
 use serde::{Deserialize, Serialize};
-use sgx_crypto_helper::rsa3072::Rsa3072PubKey;
-use sgx_types::{SGX_RSA3072_KEY_SIZE, SGX_RSA3072_PUB_EXP_SIZE};
+
+use rsa_sgx::rsa3072::{
+	rsa::{
+		create_rng, encrypt,
+		oaep_encode, RsaPublicKey, HASH_TYPE, RFS,
+	},
+};
+
 use std::time::SystemTime;
 use log::{debug, error};
 use subxt::{
@@ -76,9 +82,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let tee_account_id = enclave.pubkey;
 
 	// transmute shielding_key to rsa_pubkey
-	let pubkey: [u8; SGX_RSA3072_KEY_SIZE + SGX_RSA3072_PUB_EXP_SIZE] =
-		enclave.shielding_key.clone().try_into().unwrap();
-	let rsa_pubkey: Rsa3072PubKey = unsafe { std::mem::transmute(pubkey) };
+	let pubkey:Vec<u8> = enclave.shielding_key.clone().try_into().unwrap();
+	let rsa_pubkey: RsaPublicKey = serde_json::from_str(&std::str::from_utf8(&pubkey).unwrap()).unwrap();
+
 
 	// get aes key
 	let mut key_slice = [0u8; KEY_SIZE];
@@ -111,13 +117,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	let key_hash_encode = key_hash.encode();
 
 	// shielding key hash struct
-	let mut cipher_private_key: Vec<u8> = Vec::new();
-	rsa_pubkey
-		.encrypt_buffer(&key_hash_encode, &mut cipher_private_key)
-		.expect("Cannot shield key pieces!");
+	let sha = HASH_TYPE;
+	let mut rng = create_rng();
+	let mut cipher_private_key: [u8; RFS] = [0; RFS];
+	let mut e: [u8; RFS] = [0; RFS];
+	oaep_encode(sha, &key_hash_encode, &mut rng, None, &mut e); /* OAEP encode message M to E  */
+	encrypt(&rsa_pubkey, &e, &mut cipher_private_key); /* encrypt encoded message */
 
 	// construct key_pieces
-	let key: ShieldedKey = cipher_private_key;
+	let key: ShieldedKey = cipher_private_key.to_vec();
 	let key_piece = KeyPiece { holder: tee_account_id.clone(), shielded: key.clone() };
 	let key_pieces = vec![key_piece];
 

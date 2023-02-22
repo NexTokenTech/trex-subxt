@@ -23,10 +23,6 @@ hex = { version = "0.4.3", features = ["serde"] }
 serde_yaml = "0.9.14"
 aes-gcm = "0.10.1"
 sha2 = "0.10.2"
+serde_json = "1.0"
 
-sgx_types = { git = "https://github.com/apache/teaclave-sgx-sdk.git" }
-sgx_crypto_helper = { git = "https://github.com/apache/teaclave-sgx-sdk.git" }
-
-[patch.'https://github.com/apache/teaclave-sgx-sdk.git']
-sgx_types = { version = "1.1.6", git = "https://github.com/apache/incubator-teaclave-sgx-sdk", tag = "v1.1.6"}
-sgx_crypto_helper = { version = "1.1.6", git = "https://github.com/apache/incubator-teaclave-sgx-sdk", tag = "v1.1.6"}
+rsa-sgx = { git = "https://github.com/NexTokenTech/rsa-sgx.git" ,branch="std"}
